@@ -4,7 +4,6 @@ import in.uncod.android.Util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -58,6 +57,10 @@ public class BitmapManager {
         }
 
         Image image = new Image(activity, imageFilename, imageView, maxSize);
+
+        // Have the ImageView remember the latest image to display
+        imageView.setTag(image.getHash());
+
         Bitmap cachedResult = mCache.get(image.getHash());
         if (cachedResult != null) {
             setImage(image);
@@ -154,35 +157,25 @@ public class BitmapManager {
     private class BitmapLoader extends Thread {
         @Override
         public void run() {
-
             while (!mQueue.isEmpty()) {
-
                 Image image = mQueue.poll();
 
-                FileInputStream fis;
-                try {
-                    Bitmap b;
+                if (!image.getImageView().getTag().equals(image.getHash()))
+                    continue; // Don't bother loading image since we don't want it in this view anymore
 
-                    if (image.getMaxSize() == -1) {
-                        fis = new FileInputStream(image.getImageLocation());
-                        b = BitmapFactory.decodeStream(fis);
-                        fis.close();
-                    }
-                    else {
-                        b = loadBitmapScaled(image.getImageLocation(), image.getMaxSize());
-                    }
-                    if (image.getHash() != null && b != null) {
-                        mCache.put(image.getHash(), b);
-                    }
-                    setImage(image);
+                Bitmap b;
+
+                if (image.getMaxSize() == -1) {
+                    b = BitmapFactory.decodeFile(image.getImageLocation().getAbsolutePath());
                 }
-                catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                else {
+                    b = loadBitmapScaled(image.getImageLocation(), image.getMaxSize());
                 }
-                catch (IOException e) {
-                    e.printStackTrace();
+                if (image.getHash() != null && b != null) {
+                    mCache.put(image.getHash(), b);
                 }
 
+                setImage(image);
             }
         }
     }
