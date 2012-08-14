@@ -15,6 +15,31 @@ import android.graphics.BitmapFactory;
 import android.widget.ImageView;
 
 public class BitmapManager {
+    /**
+     * Interface for informing objects of the image loading process
+     */
+    public interface OnBitmapLoadedListener {
+        /**
+         * Called when an image is finished loading
+         * 
+         * Note: not guaranteed to execute on the UI thread
+         * 
+         * @param cached
+         *            true if the image was available in the cache
+         */
+        void onImageLoaded(boolean cached);
+
+        /**
+         * Called before the loading process is started for an image
+         * 
+         * Note: not guaranteed to execute on the UI thread
+         * 
+         * @param cached
+         *            true if the image is available in the cache
+         */
+        void beforeImageLoaded(boolean cached);
+    }
+
     private static BitmapManager instance;
     private ImageCache mCache;
     private ConcurrentLinkedQueue<Image> mQueue = new ConcurrentLinkedQueue<Image>();
@@ -49,6 +74,26 @@ public class BitmapManager {
      */
     public void displayBitmapScaled(String imageFilename, final Activity activity, ImageView imageView,
             int maxSize) {
+        displayBitmapScaled(imageFilename, activity, imageView, maxSize, null);
+    }
+
+    /**
+     * Loads and scales the specified Bitmap image into an ImageView on the given Activity.
+     * 
+     * @param imageFilename
+     *            The location of the bitmap on the filesystem
+     * @param activity
+     *            The Activity that contains the destination ImageView
+     * @param imageView
+     *            The ImageView that will display the image
+     * @param maxSize
+     *            Specifies the maximum width or height of the image. Images that exceed this size in either dimension
+     *            will be scaled down, with their aspect ratio preserved. If -1, the image will not be scaled at all.
+     * @param bitmapLoadedListener
+     *            If not null, this listener will be notified after the image bitmap is updated
+     */
+    public void displayBitmapScaled(String imageFilename, final Activity activity, ImageView imageView,
+            int maxSize, OnBitmapLoadedListener bitmapLoadedListener) {
         if (imageFilename == null || imageFilename.equals(""))
             throw new IllegalArgumentException("imageFilename must be specified");
 
@@ -56,16 +101,31 @@ public class BitmapManager {
             throw new IllegalArgumentException("imageFilename must be a real file");
         }
 
-        Image image = new Image(activity, imageFilename, imageView, maxSize);
+        Image image = new Image(activity, imageFilename, imageView, maxSize, bitmapLoadedListener);
 
         // Have the ImageView remember the latest image to display
         imageView.setTag(image.getHash());
 
         Bitmap cachedResult = mCache.get(image.getHash());
         if (cachedResult != null) {
+            // Notify listener
+            if (bitmapLoadedListener != null) {
+                bitmapLoadedListener.beforeImageLoaded(true);
+            }
+
             setImage(image);
+
+            // Notify listener
+            if (bitmapLoadedListener != null) {
+                bitmapLoadedListener.onImageLoaded(true);
+            }
         }
         else {
+            // Notify listener
+            if (bitmapLoadedListener != null) {
+                bitmapLoadedListener.beforeImageLoaded(false);
+            }
+
             mQueue.add(image);
             if (mBitmapLoader == null || !mBitmapLoader.isAlive()) {
                 mBitmapLoader = new BitmapLoader();
@@ -124,13 +184,20 @@ public class BitmapManager {
         private ImageView imageView;
         private Activity activity;
         private int maxSize;
+        private OnBitmapLoadedListener runnable;
 
-        public Image(Activity activity, String imageLocation, ImageView imageView, int maxSize) {
+        public Image(Activity activity, String imageLocation, ImageView imageView, int maxSize,
+                OnBitmapLoadedListener runAfterImageUpdated) {
             this.imageLocation = new File(imageLocation);
             this.hash = Util.md5(imageLocation + maxSize);
             this.imageView = imageView;
             this.activity = activity;
             this.maxSize = maxSize;
+            this.runnable = runAfterImageUpdated;
+        }
+
+        public OnBitmapLoadedListener getListener() {
+            return runnable;
         }
 
         public File getImageLocation() {
@@ -171,11 +238,17 @@ public class BitmapManager {
                 else {
                     b = loadBitmapScaled(image.getImageLocation(), image.getMaxSize());
                 }
+
                 if (image.getHash() != null && b != null) {
                     mCache.put(image.getHash(), b);
                 }
 
                 setImage(image);
+
+                // Notify listener
+                if (image.getListener() != null) {
+                    image.getListener().onImageLoaded(false);
+                }
             }
         }
     }
