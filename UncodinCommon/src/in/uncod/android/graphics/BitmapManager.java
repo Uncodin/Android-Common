@@ -45,7 +45,7 @@ public class BitmapManager {
     private ConcurrentLinkedQueue<Image> mQueue = new ConcurrentLinkedQueue<Image>();
     private BitmapLoader mBitmapLoader;
 
-    public static BitmapManager getBitmapManager(Context context) {
+    public static BitmapManager get(Context context) {
         if (instance == null) {
             instance = new BitmapManager(context);
         }
