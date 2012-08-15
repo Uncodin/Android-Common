@@ -15,6 +15,9 @@ import android.graphics.BitmapFactory;
 import android.widget.ImageView;
 
 public class BitmapManager {
+    public static final double MIN_MEMORY_FACTOR = .125;
+    public static final double MAX_MEMORY_FACTOR = .5;
+
     /**
      * Interface for informing objects of the image loading process
      */
@@ -41,22 +44,59 @@ public class BitmapManager {
     }
 
     private static BitmapManager instance;
+    private static double mMemoryFactor;
     private ImageCache mCache;
     private ConcurrentLinkedQueue<Image> mQueue = new ConcurrentLinkedQueue<Image>();
     private BitmapLoader mBitmapLoader;
 
+    /**
+     * Gets a BitmapManager with a memory factor of at least 1/8.
+     * 
+     * If a previous BitmapManager was created with a larger memory factor, it will be retrieved instead.
+     * 
+     * @param context
+     *            The Context to associate with the BitmapManager
+     * 
+     * @return A BitmapManager instance
+     */
     public static BitmapManager get(Context context) {
-        if (instance == null) {
-            instance = new BitmapManager(context);
+        return get(context, MIN_MEMORY_FACTOR);
+    }
+
+    /**
+     * Gets a BitmapManager with a minimum specified memory factor
+     * 
+     * @param context
+     *            The context to associate with the BitmapManager
+     * @param memoryFactor
+     *            The portion of memory the cache will be allowed to allocate. Valid values are in the range [.125, .5].
+     *            The BitmapManager instance with the largest requested memory factor is retained and will be returned
+     *            unless a larger memory factor is specified.
+     * 
+     * @return A BitmapManager instance
+     */
+    public static BitmapManager get(Context context, double memoryFactor) {
+        if (memoryFactor > MAX_MEMORY_FACTOR) {
+            memoryFactor = MAX_MEMORY_FACTOR;
         }
+        else if (memoryFactor < MIN_MEMORY_FACTOR) {
+            memoryFactor = MIN_MEMORY_FACTOR;
+        }
+
+        if (mMemoryFactor < memoryFactor) {
+            mMemoryFactor = memoryFactor;
+
+            instance = new BitmapManager(context, memoryFactor);
+        }
+
         return instance;
     }
 
-    private BitmapManager(Context context) {
+    private BitmapManager(Context context, double memoryFactor) {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 
         int memoryClassBytes = am.getMemoryClass() * 1024 * 1024;
-        mCache = new ImageCache(memoryClassBytes / 8);
+        mCache = new ImageCache((int) (memoryClassBytes * memoryFactor));
     }
 
     /**
