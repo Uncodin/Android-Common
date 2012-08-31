@@ -1,5 +1,6 @@
 package in.uncod.android.media.widget;
 
+import android.os.Environment;
 import in.uncod.android.R;
 import in.uncod.android.graphics.BitmapManager;
 import in.uncod.android.media.widget.ImagePicker.ImagePickerListener.EditCancelCallback;
@@ -60,6 +61,13 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
         }
 
         return layoutRoot;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        mTempDirectory = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
     }
 
     @Override
