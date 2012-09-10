@@ -1,5 +1,6 @@
 package in.uncod.android.graphics;
 
+import android.os.Handler;
 import in.uncod.android.Util;
 
 import java.io.File;
@@ -43,6 +44,7 @@ public class BitmapManager {
         void beforeImageLoaded(boolean cached);
     }
 
+    Handler mHandler;
     private static BitmapManager instance;
     private static double mMemoryFactor;
     private ImageCache mCache;
@@ -76,6 +78,7 @@ public class BitmapManager {
      * @return A BitmapManager instance
      */
     public static BitmapManager get(Context context, double memoryFactor) {
+
         if (memoryFactor > MAX_MEMORY_FACTOR) {
             memoryFactor = MAX_MEMORY_FACTOR;
         }
@@ -87,6 +90,7 @@ public class BitmapManager {
             mMemoryFactor = memoryFactor;
 
             instance = new BitmapManager(context, memoryFactor);
+            instance.mHandler = new Handler();
         }
 
         return instance;
@@ -104,17 +108,15 @@ public class BitmapManager {
      * 
      * @param imageFilename
      *            The location of the bitmap on the filesystem
-     * @param activity
-     *            The Activity that contains the destination ImageView
      * @param imageView
      *            The ImageView that will display the image
      * @param maxSize
      *            Specifies the maximum width or height of the image. Images that exceed this size in either dimension
      *            will be scaled down, with their aspect ratio preserved. If -1, the image will not be scaled at all.
      */
-    public void displayBitmapScaled(String imageFilename, final Activity activity, ImageView imageView,
+    public void displayBitmapScaled(String imageFilename, ImageView imageView,
             int maxSize) {
-        displayBitmapScaled(imageFilename, activity, imageView, maxSize, null);
+        displayBitmapScaled(imageFilename, imageView, maxSize, null);
     }
 
     /**
@@ -122,8 +124,6 @@ public class BitmapManager {
      * 
      * @param imageFilename
      *            The location of the bitmap on the filesystem
-     * @param activity
-     *            The Activity that contains the destination ImageView
      * @param imageView
      *            The ImageView that will display the image
      * @param maxSize
@@ -132,7 +132,7 @@ public class BitmapManager {
      * @param bitmapLoadedListener
      *            If not null, this listener will be notified after the image bitmap is updated
      */
-    public void displayBitmapScaled(String imageFilename, final Activity activity, ImageView imageView,
+    public void displayBitmapScaled(String imageFilename, ImageView imageView,
             int maxSize, OnBitmapLoadedListener bitmapLoadedListener) {
         if (imageFilename == null || imageFilename.equals(""))
             throw new IllegalArgumentException("imageFilename must be specified");
@@ -141,7 +141,7 @@ public class BitmapManager {
             throw new IllegalArgumentException("imageFilename must be a real file");
         }
 
-        Image image = new Image(activity, imageFilename, imageView, maxSize, bitmapLoadedListener);
+        Image image = new Image(imageFilename, imageView, maxSize, bitmapLoadedListener);
 
         // Have the ImageView remember the latest image to display
         imageView.setTag(image.getHash());
@@ -177,7 +177,7 @@ public class BitmapManager {
     private void setImage(final Image image) {
         final Bitmap bitmap = mCache.get(image.getHash());
         if (bitmap != null) {
-            image.getActivity().runOnUiThread(new Runnable() {
+            mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     image.getImageView().setImageBitmap(bitmap);
@@ -222,16 +222,14 @@ public class BitmapManager {
         private File imageLocation;
         private String hash;
         private ImageView imageView;
-        private Activity activity;
         private int maxSize;
         private OnBitmapLoadedListener runnable;
 
-        public Image(Activity activity, String imageLocation, ImageView imageView, int maxSize,
+        public Image(String imageLocation, ImageView imageView, int maxSize,
                 OnBitmapLoadedListener runAfterImageUpdated) {
             this.imageLocation = new File(imageLocation);
             this.hash = Util.md5(imageLocation + maxSize);
             this.imageView = imageView;
-            this.activity = activity;
             this.maxSize = maxSize;
             this.runnable = runAfterImageUpdated;
         }
@@ -250,10 +248,6 @@ public class BitmapManager {
 
         public ImageView getImageView() {
             return imageView;
-        }
-
-        public Activity getActivity() {
-            return activity;
         }
 
         public int getMaxSize() {
