@@ -41,14 +41,12 @@ public abstract class AbstractMediaPickerFragment extends Fragment {
             Uri mediaLocation = null;
             if (data != null) {
                 mediaLocation = data.getData();
+                new UpdateMedia().execute(mediaLocation);
             }
-
-            new UpdateMedia().execute(mediaLocation);
-
         }
     }
 
-    private class UpdateMedia extends AsyncTask<Uri, Object, File> {
+    protected class UpdateMedia extends AsyncTask<Uri, Object, File> {
 
         ProgressDialog dialog;
 
