@@ -1,26 +1,29 @@
 package in.uncod.android.media.widget;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import android.widget.ImageView;
+import android.widget.ImageButton;
+import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.view.View;
+import android.view.LayoutInflater;
+import android.provider.MediaStore;
 import android.os.Environment;
+import android.os.Bundle;
+import android.net.Uri;
+import android.graphics.Bitmap;
+import android.content.Intent;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface;
+import android.app.ProgressDialog;
+import android.app.Activity;
 import in.uncod.android.R;
 import in.uncod.android.graphics.BitmapManager;
 import in.uncod.android.media.widget.ImagePicker.ImagePickerListener.EditCancelCallback;
-
-import java.io.File;
-
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 
 /**
  * A simple image picker
@@ -38,6 +41,7 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
     private Bitmap tempBitmap = null;
 
     private File mTempDirectory;
+    private static String mCurrentPhotoPath;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -60,6 +64,12 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
             tempBitmap = null;
         }
 
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey("image")) {
+                mCurrentPhotoPath = savedInstanceState.getString("image");
+            }
+        }
+
         return layoutRoot;
     }
 
@@ -68,6 +78,13 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
         super.onActivityCreated(savedInstanceState);
 
         mTempDirectory = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString("image", mCurrentPhotoPath);
     }
 
     @Override
@@ -102,13 +119,40 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
 
     public void launchCameraPicker() {
 
-        File file = new File(mTempDirectory, "pic.temp");
+        File file = null;
+        try {
+            file = createImageFile();
+            Intent intent = new Intent();
+            intent.setAction(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
+            intent = Intent.createChooser(intent, "Select an image source");
+            startActivityForResult(intent, REQCODE_CAPTURE_IMAGE);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-        Intent intent = new Intent();
-        intent.setAction(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
-        intent = Intent.createChooser(intent, "Select an image source");
-        startActivityForResult(intent, REQCODE_CAPTURE_IMAGE);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == REQCODE_CAPTURE_IMAGE) {
+            if (resultCode == Activity.RESULT_OK) {
+                new UpdateMedia().execute(Uri.parse("file://" + mCurrentPhotoPath));
+            }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = timeStamp + "_";
+        File image = File.createTempFile(imageFileName, ".jpg", mTempDirectory);
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
     @Override
