@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
 public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPreparedListener,
-        View.OnClickListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
+        View.OnClickListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, SeekBar.OnSeekBarChangeListener {
 
     private MediaPlayer mMediaPlayer;
     private ImageButton mPlayPauseButton;
@@ -58,6 +58,7 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
         mSeekBar.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         addView(mSeekBar);
+        mSeekBar.setOnSeekBarChangeListener(this);
 
         setGravity(Gravity.CENTER_VERTICAL);
     }
@@ -187,5 +188,19 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
         finally {
             // Ignore exception; should only happen when no media has been loaded into the player
         }
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+        int position = mMediaPlayer.getDuration() * (i / 100);
+        mMediaPlayer.seekTo(position);
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
     }
 }
