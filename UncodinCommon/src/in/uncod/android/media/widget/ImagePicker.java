@@ -138,7 +138,13 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
 
         if (requestCode == REQCODE_CAPTURE_IMAGE) {
             if (resultCode == Activity.RESULT_OK) {
-                new UpdateMedia().execute(Uri.parse("file://" + mCurrentPhotoPath));
+
+                    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                    Uri contentUri = Uri.parse("file://" + mCurrentPhotoPath);
+                    mediaScanIntent.setData(contentUri);
+                    getActivity().sendBroadcast(mediaScanIntent);
+
+                new UpdateMedia().execute(contentUri);
             }
         }
         else {
