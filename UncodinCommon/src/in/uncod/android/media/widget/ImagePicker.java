@@ -59,8 +59,10 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
         mEditButton.setOnClickListener(this);
         mEditButton.setEnabled(false);
 
+        //If content was set before the fragments createView was called then update the content
         if (tempBitmap != null) {
             mImageThumbnail.setImageBitmap(tempBitmap);
+            mEditButton.setEnabled(true);
             tempBitmap = null;
         }
 
