@@ -1,19 +1,18 @@
 package in.uncod.android.graphics;
 
-import android.os.Handler;
-import in.uncod.android.Util;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.widget.ImageView;
+import android.os.Handler;
+import android.graphics.Matrix;
+import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
+import android.content.Context;
+import android.app.ActivityManager;
+import in.uncod.android.Util;
 
 public class BitmapManager {
     public static final double MIN_MEMORY_FACTOR = .125;
@@ -114,8 +113,7 @@ public class BitmapManager {
      *            Specifies the maximum width or height of the image. Images that exceed this size in either dimension
      *            will be scaled down, with their aspect ratio preserved. If -1, the image will not be scaled at all.
      */
-    public void displayBitmapScaled(String imageFilename, ImageView imageView,
-            int maxSize) {
+    public void displayBitmapScaled(String imageFilename, ImageView imageView, int maxSize) {
         displayBitmapScaled(imageFilename, imageView, maxSize, null);
     }
 
@@ -132,8 +130,8 @@ public class BitmapManager {
      * @param bitmapLoadedListener
      *            If not null, this listener will be notified after the image bitmap is updated
      */
-    public void displayBitmapScaled(String imageFilename, ImageView imageView,
-            int maxSize, OnBitmapLoadedListener bitmapLoadedListener) {
+    public void displayBitmapScaled(String imageFilename, ImageView imageView, int maxSize,
+            OnBitmapLoadedListener bitmapLoadedListener) {
         if (imageFilename == null || imageFilename.equals(""))
             throw new IllegalArgumentException("imageFilename must be specified");
 
@@ -186,8 +184,12 @@ public class BitmapManager {
         }
     }
 
-    // http://stackoverflow.com/a/3549021/136408
     public static Bitmap loadBitmapScaled(File f, int maxSize) {
+        return loadBitmapScaled(f, maxSize, 0);
+    }
+
+    // http://stackoverflow.com/a/3549021/136408
+    public static Bitmap loadBitmapScaled(File f, int maxSize, int orientation) {
         Bitmap b = null;
         try {
             // Decode image size
@@ -212,6 +214,28 @@ public class BitmapManager {
             fis = new FileInputStream(f);
             b = BitmapFactory.decodeStream(fis, null, o2);
             fis.close();
+
+            if (orientation > 0) {
+
+                switch (orientation) {
+                case 3:
+                    orientation = 180;
+                    break;
+                case 6:
+                    orientation = 90;
+                    break;
+                case 8:
+                    orientation = 270;
+                    break;
+                }
+
+                Matrix matrix = new Matrix();
+                matrix.postRotate(orientation);
+                Bitmap rotatedBitmap = Bitmap
+                        .createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), matrix, true);
+                b.recycle();
+                return rotatedBitmap;
+            }
         }
         catch (IOException e) {
         }

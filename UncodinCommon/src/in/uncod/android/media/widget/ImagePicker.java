@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import android.media.ExifInterface;
 import android.widget.ImageView;
 import android.widget.ImageButton;
 import android.view.ViewGroup;
@@ -178,18 +179,25 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
 
     @Override
     public void updateMediaPreview(File mediaFile) {
-        final Bitmap b = BitmapManager.loadBitmapScaled(mediaFile, 240);
-        if (b != null && mImageThumbnail != null) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mImageThumbnail.setImageBitmap(b);
-                    mEditButton.setEnabled(true);
-                }
-            });
+        try {
+            ExifInterface exif = new ExifInterface(mediaFile.toString());
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+            final Bitmap b = BitmapManager.loadBitmapScaled(mediaFile, 240, orientation);
+            if (b != null && mImageThumbnail != null) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mImageThumbnail.setImageBitmap(b);
+                        mEditButton.setEnabled(true);
+                    }
+                });
+            }
+            else {
+                tempBitmap = b;
+            }
         }
-        else {
-            tempBitmap = b;
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
