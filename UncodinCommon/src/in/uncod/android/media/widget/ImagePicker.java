@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import android.media.ExifInterface;
 import android.widget.ImageView;
 import android.widget.ImageButton;
 import android.view.ViewGroup;
@@ -16,6 +15,7 @@ import android.provider.MediaStore;
 import android.os.Environment;
 import android.os.Bundle;
 import android.net.Uri;
+import android.media.ExifInterface;
 import android.graphics.Bitmap;
 import android.content.Intent;
 import android.content.DialogInterface.OnCancelListener;
@@ -39,7 +39,7 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
     private ImageButton mEditButton;
     private ImagePickerListener mImagePickerListener;
 
-    private Bitmap tempBitmap = null;
+    private Bitmap bitmap = null;
 
     private File mTempDirectory;
     private static String mCurrentPhotoPath;
@@ -61,10 +61,9 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
         mEditButton.setEnabled(false);
 
         //If content was set before the fragments createView was called then update the content
-        if (tempBitmap != null) {
-            mImageThumbnail.setImageBitmap(tempBitmap);
+        if (bitmap != null) {
+            mImageThumbnail.setImageBitmap(bitmap);
             mEditButton.setEnabled(true);
-            tempBitmap = null;
         }
 
         if (savedInstanceState != null) {
@@ -88,6 +87,16 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
         super.onSaveInstanceState(outState);
 
         outState.putString("image", mCurrentPhotoPath);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (bitmap != null) {
+            bitmap.recycle();
+            bitmap = null;
+        }
     }
 
     @Override
@@ -142,10 +151,10 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
         if (requestCode == REQCODE_CAPTURE_IMAGE) {
             if (resultCode == Activity.RESULT_OK) {
 
-                    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                    Uri contentUri = Uri.parse("file://" + mCurrentPhotoPath);
-                    mediaScanIntent.setData(contentUri);
-                    getActivity().sendBroadcast(mediaScanIntent);
+                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                Uri contentUri = Uri.parse("file://" + mCurrentPhotoPath);
+                mediaScanIntent.setData(contentUri);
+                getActivity().sendBroadcast(mediaScanIntent);
 
                 new UpdateMedia().execute(contentUri);
             }
@@ -182,18 +191,15 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
         try {
             ExifInterface exif = new ExifInterface(mediaFile.toString());
             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
-            final Bitmap b = BitmapManager.loadBitmapScaled(mediaFile, 240, orientation);
-            if (b != null && mImageThumbnail != null) {
+            bitmap = BitmapManager.loadBitmapScaled(mediaFile, 240, orientation);
+            if (bitmap != null && mImageThumbnail != null) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mImageThumbnail.setImageBitmap(b);
+                        mImageThumbnail.setImageBitmap(bitmap);
                         mEditButton.setEnabled(true);
                     }
                 });
-            }
-            else {
-                tempBitmap = b;
             }
         }
         catch (IOException e) {
