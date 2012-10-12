@@ -118,6 +118,23 @@ public class MagicListView extends ListView {
         mDragAndDeleteManager.setDeleteAllowed(allowDelete);
     }
 
+    /**
+     * Intercepts the 'down' touch event, to make sure we can handle dragging on any child view
+     * 
+     * @param event
+     *            The motion event
+     * 
+     * @return The default implementation's return value
+     */
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN || event.getAction() == MotionEvent.ACTION_UP) {
+            onTouchEvent(event);
+        }
+
+        return super.onInterceptTouchEvent(event);
+    }
+
     /* (non-Javadoc)
      * @see android.widget.AbsListView#onTouchEvent(android.view.MotionEvent)
      */
@@ -155,8 +172,12 @@ public class MagicListView extends ListView {
                     if (mTapTimer != null) {
                         mTapTimer.cancel();
                     }
+
                     if (mLongPressTimer != null) {
-                        mLongPressTimer.cancel();
+                        synchronized (MagicListView.this) {
+                            mLongPressTimer.cancel();
+                            mLongPressTimer = null;
+                        }
                     }
                 }
             }
@@ -204,6 +225,7 @@ public class MagicListView extends ListView {
         if (mLongPressTimer != null) {
             synchronized (MagicListView.this) {
                 mLongPressTimer.cancel();
+                mLongPressTimer = null;
             }
         }
 
@@ -326,23 +348,30 @@ public class MagicListView extends ListView {
             }
         }
         else {
-
-                    synchronized (MagicListView.this) {
-                        mLongPressTimer = new Timer();
-                        mLongPressTimer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mDraggingItem = getItemAtPosition(itemnum);
-                                        mDraggingItemPos = itemnum;
-                                        startDrag(event, item, itemnum);
+            synchronized (MagicListView.this) {
+                // Only initiate the long-press timer if one isn't already active
+                if (mLongPressTimer == null) {
+                    mLongPressTimer = new Timer();
+                    mLongPressTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // Task finished, so clear the timer
+                                    synchronized (MagicListView.this) {
+                                        mLongPressTimer = null;
                                     }
-                                });
-                            }
-                        }, mLongPressTimeout + mTapTimeout);
-                    }
+
+                                    mDraggingItem = getItemAtPosition(itemnum);
+                                    mDraggingItemPos = itemnum;
+                                    startDrag(event, item, itemnum);
+                                }
+                            });
+                        }
+                    }, mLongPressTimeout + mTapTimeout);
+                }
+            }
         }
     }
 
