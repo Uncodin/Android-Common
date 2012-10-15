@@ -44,6 +44,8 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
     private File mTempDirectory;
     private static String mCurrentPhotoPath;
 
+    File mediaFile;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup layoutRoot = (ViewGroup) inflater.inflate(R.layout.image_picker, container, false);
@@ -90,12 +92,22 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        if (mediaFile != null) {
+            updateMediaPreview(mediaFile);
+        }
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
 
         if (bitmap != null) {
             bitmap.recycle();
             bitmap = null;
+            mImageThumbnail.setImageBitmap(null);
         }
     }
 
@@ -188,6 +200,7 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
 
     @Override
     public void updateMediaPreview(File mediaFile) {
+        this.mediaFile = mediaFile;
         try {
             ExifInterface exif = new ExifInterface(mediaFile.toString());
             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
