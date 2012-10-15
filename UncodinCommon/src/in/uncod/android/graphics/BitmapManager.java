@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import android.media.ExifInterface;
 import android.widget.ImageView;
 import android.os.Handler;
 import android.graphics.Matrix;
@@ -288,13 +289,21 @@ public class BitmapManager {
                 if (!image.getImageView().getTag().equals(image.getHash()))
                     continue; // Don't bother loading image since we don't want it in this view anymore
 
-                Bitmap b;
+                Bitmap b = null;
 
                 if (image.getMaxSize() == -1) {
                     b = BitmapFactory.decodeFile(image.getImageLocation().getAbsolutePath());
                 }
                 else {
-                    b = loadBitmapScaled(image.getImageLocation(), image.getMaxSize());
+                    ExifInterface exif = null;
+                    try {
+                        exif = new ExifInterface(image.getImageLocation().toString());
+                        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+                        b = loadBitmapScaled(image.getImageLocation(), image.getMaxSize(), orientation);
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 if (image.getHash() != null && b != null) {
