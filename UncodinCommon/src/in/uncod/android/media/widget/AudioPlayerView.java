@@ -14,7 +14,8 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 
 public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPreparedListener,
-        View.OnClickListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, SeekBar.OnSeekBarChangeListener {
+        View.OnClickListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
+        SeekBar.OnSeekBarChangeListener {
 
     private MediaPlayer mMediaPlayer;
     private ImageButton mPlayPauseButton;
@@ -93,8 +94,7 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
 
         case Playing:
 
-            mMediaPlayer.pause();
-            updateButtonState(PlayerState.Paused);
+            pausePlaying();
 
             break;
         }
@@ -193,7 +193,7 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
     @Override
     public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser) {
         if (fromUser) {
-            int position = (int)(mMediaPlayer.getDuration() * (i / 100.0));
+            int position = (int) (mMediaPlayer.getDuration() * (i / 100.0));
             mMediaPlayer.seekTo(position);
         }
     }
@@ -204,5 +204,24 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
+    }
+
+    public boolean isPlaying() {
+        return mMediaPlayer != null && mMediaPlayer.isPlaying();
+    }
+
+    public void pausePlaying() {
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            mMediaPlayer.pause();
+            updateButtonState(PlayerState.Paused);
+        }
+    }
+
+    public void stopPlaying() {
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            mMediaPlayer.pause();
+            mMediaPlayer.seekTo(0);
+            updateButtonState(PlayerState.Paused);
+        }
     }
 }
