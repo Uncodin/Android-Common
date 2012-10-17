@@ -2,9 +2,6 @@ package in.uncod.android;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,7 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -42,53 +38,6 @@ public class Util {
 
             arrayAdapter.notifyDataSetChanged();
         }
-    }
-
-    /**
-     * Resolves a file by URI and copies it to the destination
-     * 
-     * @param activity
-     *            The Activity whose context will be used for getting the ContentResolver
-     * @param origin
-     *            The origin file's URI (will be resolved via ContentResolver if necessary)
-     * @param destination
-     *            The destination File (should point to an actual file, not a directory)
-     * 
-     * @throws IOException
-     */
-    public static void copyFile(Activity activity, Uri origin, File destination) throws IOException {
-        InputStream fileIs = null;
-
-        if (origin.getScheme().equals(ContentResolver.SCHEME_CONTENT)) {
-            ContentResolver resolver = activity.getContentResolver();
-
-            try {
-                fileIs = resolver.openInputStream(origin);
-            }
-            catch (FileNotFoundException e) {
-                // load media on the DoD streak, content provider is broken... bullshit :/
-                File file = getImageFromUri(activity, origin);
-                fileIs = new FileInputStream(file);
-            }
-        }
-        else if (origin.getScheme().equals(ContentResolver.SCHEME_FILE)) {
-            fileIs = new FileInputStream(origin.getPath());
-        }
-
-        if (fileIs == null)
-            throw new IllegalArgumentException("origin does not appear to be a valid file for copying");
-
-        FileOutputStream fos = new FileOutputStream(destination);
-
-        int read;
-        byte[] bytes = new byte[1024];
-
-        while ((read = fileIs.read(bytes)) != -1) {
-            fos.write(bytes, 0, read);
-        }
-        fos.flush();
-        fos.close();
-        fileIs.close();
     }
 
     public static void setStatusBarVisibility(Activity activity) {
@@ -149,18 +98,18 @@ public class Util {
         return (path.delete());
     }
 
-    public static File getImageFromUri(Activity context, Uri contentUri) {
-        return new File(getRealImagePathFromUri(context, contentUri));
+    public static File getFileFromUri(Activity activity, Uri contentUri) {
+        return new File(getFilePathFromUri(activity, contentUri));
     }
 
-    public static String getRealImagePathFromUri(Activity context, Uri contentUri) {
+    public static String getFilePathFromUri(Activity activity, Uri contentUri) {
         if (contentUri.getScheme().equals("file")) {
             return contentUri.getEncodedSchemeSpecificPart();
         }
 
         // can post image
         String[] proj = { MediaStore.Images.Media.DATA };
-        Cursor cursor = context.managedQuery(contentUri, proj, // Which columns to return
+        Cursor cursor = activity.managedQuery(contentUri, proj, // Which columns to return
                 null, // WHERE clause; which rows to return (all rows)
                 null, // WHERE clause selection arguments (none)
                 null); // Order-by clause (ascending by name)
