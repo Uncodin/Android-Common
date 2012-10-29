@@ -192,7 +192,7 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int i, boolean fromUser) {
-        if (fromUser) {
+        if (fromUser && mMediaPlayer != null) {
             int position = (int) (mMediaPlayer.getDuration() * (i / 100.0));
             mMediaPlayer.seekTo(position);
         }
