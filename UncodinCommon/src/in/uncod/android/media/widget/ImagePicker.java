@@ -81,7 +81,7 @@ public class ImagePicker extends AbstractMediaPickerFragment implements OnClickL
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mTempDirectory = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        mTempDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
     }
 
     @Override
