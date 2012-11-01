@@ -2,5 +2,6 @@
 <resources>
 
     <color name="red">#FF0000</color>
+    <color name="trans_grey">#80000000</color>
 
 </resources>
