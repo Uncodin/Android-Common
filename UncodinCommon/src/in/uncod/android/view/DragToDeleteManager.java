@@ -67,7 +67,7 @@ public class DragToDeleteManager extends DragAndDropManager {
 
             if (mTrashImageView == null) {
                 mTrashImageView = new ImageView(mContext);
-                mTrashImageView.setBackgroundColor(mContext.getResources().getColor(R.color.red));
+                mTrashImageView.setBackgroundColor(mContext.getResources().getColor(R.color.trans_grey));
                 mTrashImageView.setPadding(10, 0, 10, 0);
             }
 
@@ -106,11 +106,13 @@ public class DragToDeleteManager extends DragAndDropManager {
 
             if (x < mTrashContainer.getRight() && !mHoveringOverTrash) {
                 mHoveringOverTrash = true;
+                mTrashImageView.setBackgroundColor(mContext.getResources().getColor(R.color.red));
                 mTrashImageView.setImageResource(R.drawable.ic_launcher_trashcan_active_holo);
                 mVibrator.vibrate(100);
             }
             else if (x > mTrashContainer.getRight() + 10) {
                 mHoveringOverTrash = false;
+                mTrashImageView.setBackgroundColor(mContext.getResources().getColor(R.color.trans_grey));
                 mTrashImageView.setImageResource(R.drawable.ic_launcher_trashcan_normal_holo);
             }
         }
