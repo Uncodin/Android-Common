@@ -1,5 +1,6 @@
 package in.uncod.android.widget;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -76,6 +77,8 @@ public class MagicListView extends ListView {
 
     boolean tapTimedOut = false;
 
+    List<Integer> excludedItems;
+
     public MagicListView(Context context) {
         super(context);
 
@@ -125,6 +128,10 @@ public class MagicListView extends ListView {
      */
     public void setDeleteAllowed(boolean allowDelete) {
         mDragAndDeleteManager.setDeleteAllowed(allowDelete);
+    }
+
+    public void setExcludedItems(List<Integer> excluded) {
+        excludedItems = excluded;
     }
 
     /**
@@ -359,7 +366,7 @@ public class MagicListView extends ListView {
         else {
             synchronized (MagicListView.this) {
                 // Only initiate the long-press timer if one isn't already active
-                if (mLongPressTimer == null) {
+                if (mLongPressTimer == null && !excludedItems.contains(itemnum)) {
                     mLongPressTimer = new Timer();
                     mLongPressTimer.schedule(new TimerTask() {
                         @Override
