@@ -1,20 +1,21 @@
 package in.uncod.android.view;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.PixelFormat;
-import android.view.Gravity;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.WindowManager;
-import android.view.WindowManager.LayoutParams;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.FrameLayout;
+import android.view.WindowManager.LayoutParams;
+import android.view.WindowManager;
+import android.view.View;
+import android.view.MotionEvent;
+import android.view.Gravity;
+import android.graphics.PixelFormat;
+import android.graphics.Bitmap;
+import android.content.Context;
+import in.uncod.android.R;
 
 /**
  * This class handles the visual portion of dragging and dropping a UI element. Refer to the startDragging(),
  * stopDragging(), onTouchEvent(), and release() methods for usage.
- *
+ * 
  * @author cwc
  */
 public class DragAndDropManager {
@@ -24,7 +25,7 @@ public class DragAndDropManager {
     private FrameLayout mDragContainer;
     private ImageView mDraggingImageView;
     private boolean mDragging;
-    private int[] mOffset = {0, 0};
+    private int[] mOffset = { 0, 0 };
     private View mDraggedView;
     private boolean mContainerAttached;
 
@@ -41,8 +42,8 @@ public class DragAndDropManager {
         mWindowParams = new WindowManager.LayoutParams();
         mWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
 
-        mWindowParams.height = WindowManager.LayoutParams.FILL_PARENT;
-        mWindowParams.width = WindowManager.LayoutParams.FILL_PARENT;
+        mWindowParams.height = LayoutParams.MATCH_PARENT;
+        mWindowParams.width = WindowManager.LayoutParams.MATCH_PARENT;
         mWindowParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
                 | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
@@ -61,7 +62,7 @@ public class DragAndDropManager {
 
     /**
      * Responds to motion events and handles the display of dragged views
-     *
+     * 
      * @param event
      * @return true if event was handled successfully
      */
@@ -109,7 +110,7 @@ public class DragAndDropManager {
 
     /**
      * Tells this drag manager that the given child view is being dragged
-     *
+     * 
      * @param draggedView
      * @param event
      */
@@ -119,10 +120,11 @@ public class DragAndDropManager {
 
     /**
      * Tells this drag manager that the given child view is being dragged
-     *
+     * 
      * @param draggedView
      * @param event
-     * @param yOffset     The number of pixels to subtract from the y-position of the dragged view
+     * @param yOffset
+     *            The number of pixels to subtract from the y-position of the dragged view
      */
     public void startDragging(View draggedView, MotionEvent event, int yOffset) {
         mDraggedView = draggedView;
@@ -164,7 +166,7 @@ public class DragAndDropManager {
 
     /**
      * Gets the currently dragged view
-     *
+     * 
      * @return The View supplied when startDragging() was called, or null if no longer dragging a View
      */
     public View getDraggedView() {

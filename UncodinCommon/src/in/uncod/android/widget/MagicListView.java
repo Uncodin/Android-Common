@@ -1,23 +1,25 @@
 package in.uncod.android.widget;
 
-import in.uncod.android.view.DragToDeleteManager;
-
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.content.Context;
-import android.graphics.Rect;
-import android.os.Handler;
-import android.os.Vibrator;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.AdapterView;
+import android.view.ViewGroup;
+import android.view.ViewConfiguration;
+import android.view.View;
+import android.view.MotionEvent;
+import android.util.AttributeSet;
+import android.os.Vibrator;
+import android.os.Handler;
+import android.graphics.Rect;
+import android.content.res.TypedArray;
+import android.content.Context;
 
 import com.globalmentor.android.content.res.Themes;
+
+import in.uncod.android.R;
+import in.uncod.android.view.DragToDeleteManager;
 
 /**
  * This class extends ListView to allow drag-and-reorder and drag-to-delete operations
@@ -77,24 +79,31 @@ public class MagicListView extends ListView {
     public MagicListView(Context context) {
         super(context);
 
-        setup(context);
+        setup(context, null);
     }
 
     public MagicListView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        setup(context);
+        setup(context, attrs);
     }
 
     public MagicListView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        setup(context);
+        setup(context, attrs);
     }
 
-    private void setup(Context context) {
+    private void setup(Context context, AttributeSet attrs) {
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-        mPreferredItemHeight = (int) Themes.getListPreferredItemHeightDimension(context);
+
+        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.MagicListView);
+
+        mPreferredItemHeight = a.getDimensionPixelSize(R.styleable.MagicListView_preferredItemHeight,
+                (int) Themes.getListPreferredItemHeightDimension(context));
+
+        a.recycle();
+
         mDragAndDeleteManager = new DragToDeleteManager(context);
 
         setSelector(android.R.color.transparent);

@@ -1,0 +1,5 @@
+<resources>
+    <declare-styleable name="MagicListView">
+        <attr name="preferredItemHeight" format="dimension" />
+    </declare-styleable>
+</resources>
