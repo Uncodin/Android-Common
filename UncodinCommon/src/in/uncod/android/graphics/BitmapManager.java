@@ -247,6 +247,7 @@ public class BitmapManager {
             }
         }
         catch (IOException e) {
+            e.printStackTrace();
         }
         return b;
     }
