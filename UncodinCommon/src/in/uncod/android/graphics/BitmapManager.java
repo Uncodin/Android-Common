@@ -5,9 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import android.media.ExifInterface;
 import android.widget.ImageView;
 import android.os.Handler;
+import android.media.ExifInterface;
 import android.graphics.Matrix;
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
@@ -186,7 +186,15 @@ public class BitmapManager {
     }
 
     public static Bitmap loadBitmapScaled(File f, int maxSize) {
-        return loadBitmapScaled(f, maxSize, 0);
+        int orientation = 0;
+        try {
+            ExifInterface exif = new ExifInterface(f.toString());
+            orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return loadBitmapScaled(f, maxSize, orientation);
     }
 
     // http://stackoverflow.com/a/3549021/136408
