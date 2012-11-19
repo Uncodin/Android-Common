@@ -23,11 +23,6 @@ public abstract class AbstractMediaPickerFragment extends Fragment {
 
     public abstract void updateMediaPreview(File mediaFile);
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
-
     protected void runOnUiThread(Runnable runnable) {
         getActivity().runOnUiThread(runnable);
     }
@@ -46,7 +41,7 @@ public abstract class AbstractMediaPickerFragment extends Fragment {
         }
     }
 
-    protected class UpdateMedia extends AsyncTask<Uri, Object, File> {
+    public class UpdateMedia extends AsyncTask<Uri, Object, File> {
 
         ProgressDialog dialog;
 
