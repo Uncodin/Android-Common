@@ -57,7 +57,7 @@ public class UndoBarController {
 
         mBarView.setVisibility(View.VISIBLE);
         if (immediate) {
-            mBarView.setAlpha(1);
+            mBarAnimator.alpha(1).setDuration(0);
         } else {
             mBarAnimator.cancel();
             mBarAnimator
@@ -73,7 +73,7 @@ public class UndoBarController {
         mHideHandler.removeCallbacks(mHideRunnable);
         if (immediate) {
             mBarView.setVisibility(View.GONE);
-            mBarView.setAlpha(0);
+            mBarAnimator.alpha(0).setDuration(0);
             mUndoMessage = null;
             mUndoToken = null;
 
