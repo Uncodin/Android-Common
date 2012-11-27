@@ -72,6 +72,8 @@ public class MagicListView extends ListView {
     private int mLongPressStartX;
     private int mLongPressStartY;
 
+    private View hiddenChild;
+
     int mLongPressTimeout = ViewConfiguration.getLongPressTimeout();
     int mTapTimeout = ViewConfiguration.getTapTimeout();
 
@@ -261,6 +263,13 @@ public class MagicListView extends ListView {
             mLastExpandedItem.setVisibility(View.GONE);
         }
 
+        if (hiddenChild != null) {
+            ViewGroup.LayoutParams lp = hiddenChild.getLayoutParams();
+            lp.height = mPreferredItemHeight;
+            hiddenChild.setLayoutParams(lp);
+            hiddenChild.setVisibility(View.VISIBLE);
+        }
+
         mDragAndDeleteManager.stopDragging();
     }
 
@@ -319,9 +328,9 @@ public class MagicListView extends ListView {
 
         int firstVisible = MagicListView.this.getFirstVisiblePosition();
 
-        View current = MagicListView.this.getChildAt(mDraggingItemPos - firstVisible);
+        hiddenChild = MagicListView.this.getChildAt(mDraggingItemPos - firstVisible);
 
-        ViewGroup.LayoutParams lp = current.getLayoutParams();
+        ViewGroup.LayoutParams lp = hiddenChild.getLayoutParams();
 
         if (itemnum == mDraggingItemPos) {
             lp.height = mPreferredItemHeight;
@@ -330,8 +339,8 @@ public class MagicListView extends ListView {
             lp.height = 1;
         }
 
-        current.setLayoutParams(lp);
-        current.setVisibility(View.INVISIBLE);
+        hiddenChild.setLayoutParams(lp);
+        hiddenChild.setVisibility(View.INVISIBLE);
         layoutChildren();
     }
 
