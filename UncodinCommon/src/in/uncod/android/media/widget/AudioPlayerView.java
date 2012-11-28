@@ -66,7 +66,13 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
-        updateButtonState(PlayerState.Paused);
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                updateButtonState(PlayerState.Paused);
+            }
+        });
 
         playbackProgressUpdater = new Thread(new ProgressUpdate());
         playbackProgressUpdater.start();
