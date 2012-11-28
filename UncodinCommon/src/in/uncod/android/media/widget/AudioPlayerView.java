@@ -66,14 +66,7 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
-
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                updateButtonState(PlayerState.Paused);
-            }
-        });
-
+        updateButtonState(PlayerState.Paused);
         playbackProgressUpdater = new Thread(new ProgressUpdate());
         playbackProgressUpdater.start();
     }
@@ -131,31 +124,34 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
         }
     }
 
-    private void updateButtonState(PlayerState playerState) {
-
+    private void updateButtonState(final PlayerState playerState) {
         mPlayerState = playerState;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                switch (playerState) {
+                case Paused:
 
-        switch (playerState) {
-        case Paused:
+                    mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
+                    mPlayPauseButton.setEnabled(true);
 
-            mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
-            mPlayPauseButton.setEnabled(true);
+                    break;
+                case Playing:
 
-            break;
-        case Playing:
+                    mPlayPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+                    mPlayPauseButton.setEnabled(true);
 
-            mPlayPauseButton.setImageResource(android.R.drawable.ic_media_pause);
-            mPlayPauseButton.setEnabled(true);
+                    break;
 
-            break;
+                case Preparing:
 
-        case Preparing:
+                    mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
+                    mPlayPauseButton.setEnabled(false);
 
-            mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
-            mPlayPauseButton.setEnabled(false);
-
-            break;
-        }
+                    break;
+                }
+            }
+        });
     }
 
     private class ProgressUpdate implements Runnable {
