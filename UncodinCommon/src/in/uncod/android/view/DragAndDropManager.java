@@ -1,16 +1,15 @@
 package in.uncod.android.view;
 
-import android.widget.ImageView;
-import android.widget.FrameLayout;
-import android.view.WindowManager.LayoutParams;
-import android.view.WindowManager;
-import android.view.View;
-import android.view.MotionEvent;
-import android.view.Gravity;
-import android.graphics.PixelFormat;
-import android.graphics.Bitmap;
 import android.content.Context;
-import in.uncod.android.R;
+import android.graphics.Bitmap;
+import android.graphics.PixelFormat;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 /**
  * This class handles the visual portion of dragging and dropping a UI element. Refer to the startDragging(),
