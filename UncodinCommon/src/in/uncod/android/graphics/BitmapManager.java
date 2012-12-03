@@ -219,6 +219,8 @@ public class BitmapManager {
                     case 8:
                         orientation = 270;
                         break;
+                    default:
+                        orientation = 0;
                 }
 
                 Matrix matrix = new Matrix();
