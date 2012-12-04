@@ -27,8 +27,9 @@ public class BitmapManager {
          * Called when an image is finished loading
          * <p/>
          * Note: not guaranteed to execute on the UI thread
-         *
-         * @param cached true if the image was available in the cache
+         * 
+         * @param cached
+         *            true if the image was available in the cache
          */
         void onImageLoaded(boolean cached);
 
@@ -36,8 +37,9 @@ public class BitmapManager {
          * Called before the loading process is started for an image
          * <p/>
          * Note: not guaranteed to execute on the UI thread
-         *
-         * @param cached true if the image is available in the cache
+         * 
+         * @param cached
+         *            true if the image is available in the cache
          */
         void beforeImageLoaded(boolean cached);
     }
@@ -53,8 +55,9 @@ public class BitmapManager {
      * Gets a BitmapManager with a memory factor of at least 1/8.
      * <p/>
      * If a previous BitmapManager was created with a larger memory factor, it will be retrieved instead.
-     *
-     * @param context The Context to associate with the BitmapManager
+     * 
+     * @param context
+     *            The Context to associate with the BitmapManager
      * @return A BitmapManager instance
      */
     public static BitmapManager get(Context context) {
@@ -63,18 +66,21 @@ public class BitmapManager {
 
     /**
      * Gets a BitmapManager with a minimum specified memory factor
-     *
-     * @param context      The context to associate with the BitmapManager
-     * @param memoryFactor The portion of memory the cache will be allowed to allocate. Valid values are in the range [.125, .5].
-     *                     The BitmapManager instance with the largest requested memory factor is retained and will be returned
-     *                     unless a larger memory factor is specified.
+     * 
+     * @param context
+     *            The context to associate with the BitmapManager
+     * @param memoryFactor
+     *            The portion of memory the cache will be allowed to allocate. Valid values are in the range [.125, .5].
+     *            The BitmapManager instance with the largest requested memory factor is retained and will be returned
+     *            unless a larger memory factor is specified.
      * @return A BitmapManager instance
      */
     public static BitmapManager get(Context context, double memoryFactor) {
 
         if (memoryFactor > MAX_MEMORY_FACTOR) {
             memoryFactor = MAX_MEMORY_FACTOR;
-        } else if (memoryFactor < MIN_MEMORY_FACTOR) {
+        }
+        else if (memoryFactor < MIN_MEMORY_FACTOR) {
             memoryFactor = MIN_MEMORY_FACTOR;
         }
 
@@ -97,11 +103,14 @@ public class BitmapManager {
 
     /**
      * Loads and scales the specified Bitmap image into an ImageView on the given Activity.
-     *
-     * @param imageFilename The location of the bitmap on the filesystem
-     * @param imageView     The ImageView that will display the image
-     * @param maxSize       Specifies the maximum width or height of the image. Images that exceed this size in either dimension
-     *                      will be scaled down, with their aspect ratio preserved. If -1, the image will not be scaled at all.
+     * 
+     * @param imageFilename
+     *            The location of the bitmap on the filesystem
+     * @param imageView
+     *            The ImageView that will display the image
+     * @param maxSize
+     *            Specifies the maximum width or height of the image. Images that exceed this size in either dimension
+     *            will be scaled down, with their aspect ratio preserved. If -1, the image will not be scaled at all.
      */
     public void displayBitmapScaled(String imageFilename, ImageView imageView, int maxSize) {
         displayBitmapScaled(imageFilename, imageView, maxSize, null);
@@ -109,15 +118,19 @@ public class BitmapManager {
 
     /**
      * Loads and scales the specified Bitmap image into an ImageView on the given Activity.
-     *
-     * @param imageFilename        The location of the bitmap on the filesystem
-     * @param imageView            The ImageView that will display the image
-     * @param maxSize              Specifies the maximum width or height of the image. Images that exceed this size in either dimension
-     *                             will be scaled down, with their aspect ratio preserved. If -1, the image will not be scaled at all.
-     * @param bitmapLoadedListener If not null, this listener will be notified after the image bitmap is updated
+     * 
+     * @param imageFilename
+     *            The location of the bitmap on the filesystem
+     * @param imageView
+     *            The ImageView that will display the image
+     * @param maxSize
+     *            Specifies the maximum width or height of the image. Images that exceed this size in either dimension
+     *            will be scaled down, with their aspect ratio preserved. If -1, the image will not be scaled at all.
+     * @param bitmapLoadedListener
+     *            If not null, this listener will be notified after the image bitmap is updated
      */
     public void displayBitmapScaled(String imageFilename, ImageView imageView, int maxSize,
-                                    OnBitmapLoadedListener bitmapLoadedListener) {
+            OnBitmapLoadedListener bitmapLoadedListener) {
         if (imageFilename == null || imageFilename.equals(""))
             throw new IllegalArgumentException("imageFilename must be specified");
 
@@ -143,7 +156,8 @@ public class BitmapManager {
             if (bitmapLoadedListener != null) {
                 bitmapLoadedListener.onImageLoaded(true);
             }
-        } else {
+        }
+        else {
             // Notify listener
             if (bitmapLoadedListener != null) {
                 bitmapLoadedListener.beforeImageLoaded(false);
@@ -174,7 +188,8 @@ public class BitmapManager {
         try {
             ExifInterface exif = new ExifInterface(f.toString());
             orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
         return loadBitmapScaled(f, maxSize, orientation);
@@ -204,35 +219,47 @@ public class BitmapManager {
             BitmapFactory.Options o2 = new BitmapFactory.Options();
             o2.inSampleSize = scale;
             fis = new FileInputStream(f);
-            b = BitmapFactory.decodeStream(fis, null, o2);
+            try {
+                b = BitmapFactory.decodeStream(fis, null, o2);
+            }
+            catch (OutOfMemoryError e) {
+                fis.close();
+                throw new OutOfMemoryError();
+            }
             fis.close();
 
             if (orientation > 0) {
 
                 switch (orientation) {
-                    case 3:
-                        orientation = 180;
-                        break;
-                    case 6:
-                        orientation = 90;
-                        break;
-                    case 8:
-                        orientation = 270;
-                        break;
-                    default:
-                        orientation = 0;
+                case 3:
+                    orientation = 180;
+                    break;
+                case 6:
+                    orientation = 90;
+                    break;
+                case 8:
+                    orientation = 270;
+                    break;
+                default:
+                    orientation = 0;
                 }
 
                 Matrix matrix = new Matrix();
                 matrix.postRotate(orientation);
                 Bitmap rotatedBitmap = null;
-                rotatedBitmap = Bitmap
-                        .createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), matrix, true);
+                try {
+                    rotatedBitmap = Bitmap.createBitmap(b, 0, 0, b.getWidth(), b.getHeight(), matrix, true);
+                }
+                catch (OutOfMemoryError e) {
+                    b.recycle();
+                    throw new OutOfMemoryError();
+                }
                 b.recycle();
 
                 return rotatedBitmap;
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
         return b;
@@ -246,7 +273,7 @@ public class BitmapManager {
         private OnBitmapLoadedListener runnable;
 
         public Image(String imageLocation, ImageView imageView, int maxSize,
-                     OnBitmapLoadedListener runAfterImageUpdated) {
+                OnBitmapLoadedListener runAfterImageUpdated) {
             this.imageLocation = new File(imageLocation);
             this.hash = Util.md5(imageLocation + maxSize);
             this.imageView = imageView;
@@ -289,11 +316,13 @@ public class BitmapManager {
                 if (image.getMaxSize() == -1) {
                     try {
                         b = BitmapFactory.decodeFile(image.getImageLocation().getAbsolutePath());
-                    } catch (OutOfMemoryError e) {
+                    }
+                    catch (OutOfMemoryError e) {
                         e.printStackTrace();
                         mCache.freeSpace();
                     }
-                } else {
+                }
+                else {
 
                     int orientation = 0;
 
@@ -301,15 +330,15 @@ public class BitmapManager {
                     try {
                         exif = new ExifInterface(image.getImageLocation().toString());
                         orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         e.printStackTrace();
                     }
 
                     try {
-                    b = loadBitmapScaled(image.getImageLocation(), image.getMaxSize(), orientation);
+                        b = loadBitmapScaled(image.getImageLocation(), image.getMaxSize(), orientation);
                     }
                     catch (OutOfMemoryError e) {
-                        e.printStackTrace();
                         mCache.freeSpace();
                     }
                 }
