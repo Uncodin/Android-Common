@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.ImageView;
 import in.uncod.android.Util;
 
@@ -197,6 +198,7 @@ public class BitmapManager {
 
     // http://stackoverflow.com/a/3549021/136408
     public static Bitmap loadBitmapScaled(File f, int maxSize, int orientation) throws OutOfMemoryError {
+        Log.d("BitmapLoader", "MaxSize: "+ maxSize);
         Bitmap b = null;
         try {
             // Decode image size
@@ -241,7 +243,7 @@ public class BitmapManager {
                     orientation = 270;
                     break;
                 default:
-                    orientation = 0;
+                    return b;
                 }
 
                 Matrix matrix = new Matrix();
@@ -252,6 +254,7 @@ public class BitmapManager {
                 }
                 catch (OutOfMemoryError e) {
                     b.recycle();
+                    b = null;
                     throw new OutOfMemoryError();
                 }
                 b.recycle();
