@@ -22,6 +22,6 @@ public class ImageCache extends LruCache<String, Bitmap> {
     }
 
     public void freeSpace() {
-        trimToSize(maxSize / 2);
+        trimToSize(maxSize / 4);
     }
 }
