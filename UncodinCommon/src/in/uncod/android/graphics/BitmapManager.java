@@ -184,7 +184,7 @@ public class BitmapManager {
         }
     }
 
-    public static Bitmap loadBitmapScaled(File f, int maxSize) {
+    public static Bitmap loadBitmapScaled(File f, int maxSize) throws OutOfMemoryError {
         int orientation = 0;
         try {
             ExifInterface exif = new ExifInterface(f.toString());
