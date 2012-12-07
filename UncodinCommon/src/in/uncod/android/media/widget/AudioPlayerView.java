@@ -6,6 +6,7 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,8 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
     Thread playbackProgressUpdater;
 
     Handler mHandler = new Handler();
+
+    int position = -1;
 
     enum PlayerState {
         Playing, Paused, Preparing
@@ -67,6 +70,13 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
         updateButtonState(PlayerState.Paused);
+
+        if (position > -1) {
+            mMediaPlayer.start();
+            mMediaPlayer.seekTo(position);
+            updateButtonState(PlayerState.Playing);
+        }
+
         playbackProgressUpdater = new Thread(new ProgressUpdate());
         playbackProgressUpdater.start();
     }
@@ -84,22 +94,28 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
     @Override
     public void onClick(View view) {
         switch (mPlayerState) {
-        case Paused:
+            case Paused:
 
-            mMediaPlayer.start();
-            updateButtonState(PlayerState.Playing);
+                mMediaPlayer.start();
+                updateButtonState(PlayerState.Playing);
 
-            break;
+                break;
 
-        case Playing:
+            case Playing:
 
-            pausePlaying();
+                pausePlaying();
 
-            break;
+                break;
         }
     }
 
     public void setMediaLocation(String location) {
+        setMediaLocation(location, -1);
+    }
+
+    public void setMediaLocation(String location, int position) {
+
+        this.position = position;
 
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
@@ -130,25 +146,25 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
             @Override
             public void run() {
                 switch (playerState) {
-                case Paused:
+                    case Paused:
 
-                    mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
-                    mPlayPauseButton.setEnabled(true);
+                        mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
+                        mPlayPauseButton.setEnabled(true);
 
-                    break;
-                case Playing:
+                        break;
+                    case Playing:
 
-                    mPlayPauseButton.setImageResource(android.R.drawable.ic_media_pause);
-                    mPlayPauseButton.setEnabled(true);
+                        mPlayPauseButton.setImageResource(android.R.drawable.ic_media_pause);
+                        mPlayPauseButton.setEnabled(true);
 
-                    break;
+                        break;
 
-                case Preparing:
+                    case Preparing:
 
-                    mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
-                    mPlayPauseButton.setEnabled(false);
+                        mPlayPauseButton.setImageResource(android.R.drawable.ic_media_play);
+                        mPlayPauseButton.setEnabled(false);
 
-                    break;
+                        break;
                 }
             }
         });
@@ -186,8 +202,7 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
             if (mMediaPlayer != null) {
                 mMediaPlayer.seekTo(0);
             }
-        }
-        finally {
+        } finally {
             // Ignore exception; should only happen when no media has been loaded into the player
         }
     }
@@ -224,6 +239,15 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
             mMediaPlayer.pause();
             mMediaPlayer.seekTo(0);
             updateButtonState(PlayerState.Paused);
+        }
+    }
+
+    public int getCurrentPosition() {
+        try {
+            return mMediaPlayer.getCurrentPosition();
+        }
+        catch (IllegalStateException e) {
+            return -1;
         }
     }
 }
