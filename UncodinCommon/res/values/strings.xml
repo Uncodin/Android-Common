@@ -9,5 +9,6 @@
     <string name="capture_image">Capture Image</string>
     <string name="pick_image">Pick Image</string>
     <string name="edit_image">Edit Image</string>
+    <string name="choose_account_instructions">Choose an account:</string>
 
 </resources>
