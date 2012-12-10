@@ -243,11 +243,13 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
     }
 
     public int getCurrentPosition() {
-        try {
-            return mMediaPlayer.getCurrentPosition();
+        if (mMediaPlayer != null) {
+            try {
+                return mMediaPlayer.getCurrentPosition();
+            }
+            catch (IllegalStateException e) {
+            }
         }
-        catch (IllegalStateException e) {
-            return -1;
-        }
+        return -1;
     }
 }
