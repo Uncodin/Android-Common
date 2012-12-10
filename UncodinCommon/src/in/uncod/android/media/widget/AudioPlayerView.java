@@ -71,7 +71,7 @@ public class AudioPlayerView extends LinearLayout implements MediaPlayer.OnPrepa
     public void onPrepared(MediaPlayer mediaPlayer) {
         updateButtonState(PlayerState.Paused);
 
-        if (position > -1) {
+        if (position > 0) {
             mMediaPlayer.start();
             mMediaPlayer.seekTo(position);
             updateButtonState(PlayerState.Playing);
