@@ -5,6 +5,7 @@ import in.uncod.android.util.threading.TaskWithProgressAndListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
@@ -93,31 +94,10 @@ public class DownloadFilesTask extends TaskWithProgressAndListener<URL, Integer,
 
                         Log.d(TAG, "Downloading file " + url + " to " + destinationFile.getAbsolutePath());
 
-                        URLConnection connection = url.openConnection();
-                        connection.connect();
+                        downloadFileFromUrl(url, output, currentFileIndex, downloadUrls.length);
 
-                        // Get file size
-                        int fileLength = connection.getContentLength();
-
-                        // Download the file
-                        InputStream input = new BufferedInputStream(url.openStream());
-
-                        byte data[] = new byte[1024];
-                        float total = 0;
-                        int count;
-                        while ((count = input.read(data)) != -1) {
-                            total += count;
-
-                            output.write(data, 0, count);
-
-                            // Update progress
-                            int currentDownloadPercent = (int) (100 * (total / fileLength));
-                            publishProgress(currentFileIndex, downloadUrls.length, currentDownloadPercent);
-                        }
-
-                        output.flush();
-                        output.close();
-                        input.close();
+                        // Update progress
+                        publishProgress(currentFileIndex, downloadUrls.length, 100);
                     }
 
                     results.add(destinationFile);
@@ -134,5 +114,49 @@ public class DownloadFilesTask extends TaskWithProgressAndListener<URL, Integer,
         }
 
         return results;
+    }
+
+    /**
+     * Download a file from a URL, and update the total progress if possible
+     * 
+     * @param url
+     *            The remote location of the file
+     * @param output
+     *            The file contents will be written to this stream
+     * @param currentFileIndex
+     *            The current index of the file being downloaded (for progress updates)
+     * @param totalFileCount
+     *            The total number of files being downloaded (for progress updates)
+     * 
+     * @throws IOException
+     *             Thrown if there is an error while downloading the file
+     */
+    protected void downloadFileFromUrl(URL url, OutputStream output, int currentFileIndex, int totalFileCount)
+            throws IOException {
+        URLConnection connection = url.openConnection();
+        connection.connect();
+
+        // Get file size
+        int fileLength = connection.getContentLength();
+
+        // Download the file
+        InputStream input = new BufferedInputStream(url.openStream());
+
+        byte data[] = new byte[1024];
+        float total = 0;
+        int count;
+        while ((count = input.read(data)) != -1) {
+            total += count;
+
+            output.write(data, 0, count);
+        }
+
+        // Update progress
+        int currentDownloadPercent = (int) (100 * (total / fileLength));
+        publishProgress(currentFileIndex, totalFileCount, currentDownloadPercent);
+
+        output.flush();
+        output.close();
+        input.close();
     }
 }
