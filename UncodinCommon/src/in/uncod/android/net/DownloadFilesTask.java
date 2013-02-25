@@ -1,6 +1,6 @@
 package in.uncod.android.net;
 
-import in.uncod.android.util.threading.TaskWithProgressAndListener;
+import in.uncod.android.util.threading.TaskWithResultListener;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -13,13 +13,15 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.ProgressDialog;
 import android.util.Log;
 
 /**
- * A task for downloading multiple files, that accepts an optional results callback and progress dialog.
+ * A task for downloading multiple files, that accepts an optional results callback.
+ * 
+ * Download progress is published with three values: current file index, total file count, and current file progress.
+ * Subclasses can override onProgressUpdate in order to e.g. update a progress dialog.
  */
-public class DownloadFilesTask extends TaskWithProgressAndListener<URL, Integer, List<File>> {
+public class DownloadFilesTask extends TaskWithResultListener<URL, Integer, List<File>> {
     private static final String TAG = "DownloadFilesTask";
 
     private File mDestinationPath;
@@ -35,37 +37,16 @@ public class DownloadFilesTask extends TaskWithProgressAndListener<URL, Integer,
      *            existing file will be returned with the rest of the download results.
      * @param listener
      *            If not null, the result listener will be activated with the list of downloaded files.
-     * @param dialog
-     *            If not null, the progress dialog will be shown and dismissed automatically, and will have its values
-     *            updated as files are downloaded. Any special settings such as cancellation, style, etc. should be set
-     *            on the dialog before the task is executed.
      */
     public DownloadFilesTask(File destinationPath, boolean overwriteExisting,
-            OnTaskResultListener<List<File>> listener, ProgressDialog dialog) {
-        super(listener, dialog);
+            OnTaskResultListener<List<File>> listener) {
+        super(listener);
 
         if (destinationPath == null || !destinationPath.exists() || !destinationPath.isDirectory())
             throw new IllegalArgumentException("destinationPath must be an existing directory");
 
         mDestinationPath = destinationPath;
         mOverwriteExisting = overwriteExisting;
-    }
-
-    @Override
-    protected void onProgressUpdate(Integer... values) {
-        super.onProgressUpdate(values);
-
-        if (mDialog != null) {
-            int currentFileIndex = values[0];
-            int numberOfFiles = values[1];
-            int currentDownloadPercent = values[2];
-
-            // Total progress is 100% multiplied by the number of files
-            mDialog.setMax(100 * numberOfFiles);
-
-            // Current progress is 100% for each previous file, added to the percentage for the current download
-            mDialog.setProgress((currentFileIndex * 100) + currentDownloadPercent);
-        }
     }
 
     @Override
