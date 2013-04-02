@@ -1,7 +1,7 @@
 package in.uncod.android.graphics;
 
 import android.graphics.Bitmap;
-import android.support.v4.util.LruCache;
+import in.uncod.android.LruCache;
 
 /**
  * An implementation of LruCache for storing Bitmaps with String keys
