@@ -9,5 +9,6 @@
     <string name="capture_image">Capture Image</string>
     <string name="pick_image">Pick Image</string>
     <string name="edit_image">Edit Image</string>
-
+    <string name="done">Done</string>
+    <string name="discard">Discard</string>
 </resources>
