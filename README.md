@@ -17,4 +17,4 @@ The UncodinCommon and UncodinCommon-standalone projects are standard Android lib
 License
 -------
 
-[BSD 3-Clause](http://opensource.org/licenses/bsd-3-clause)
+All contents of this repository are dual-licensed under the [BSD 3-Clause](/LICENSE-BSD.md) and [MIT](/LICENSE-MIT.md) licenses.
