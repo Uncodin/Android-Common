@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="select_audio">Select Audio</string>
+    <string name="select_video">Select Video</string>
+    <string name="loading">Loading&#8230;</string>
+    <string name="record_video">Record Video</string>
+    <string name="pick_video">Pick Video</string>
+    <string name="capture_image">Capture Image</string>
+    <string name="pick_image">Pick Image</string>
+    <string name="edit_image">Edit Image</string>
+    <string name="done">Done</string>
+    <string name="discard">Discard</string>
+</resources>
