@@ -1,26 +1,27 @@
 package in.uncod.android.widget;
 
+import in.uncod.android.R;
+import in.uncod.android.view.DragToDeleteManager;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import android.widget.ListView;
-import android.widget.AdapterView;
-import android.view.ViewGroup;
-import android.view.ViewConfiguration;
-import android.view.View;
-import android.view.MotionEvent;
-import android.util.AttributeSet;
-import android.os.Vibrator;
-import android.os.Handler;
-import android.graphics.Rect;
-import android.content.res.TypedArray;
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Rect;
+import android.os.Handler;
+import android.os.Vibrator;
+import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
 
 import com.globalmentor.android.content.res.Themes;
-
-import in.uncod.android.R;
-import in.uncod.android.view.DragToDeleteManager;
 
 /**
  * This class extends ListView to allow drag-and-reorder and drag-to-delete operations
@@ -79,7 +80,7 @@ public class MagicListView extends ListView {
 
     boolean tapTimedOut = false;
 
-    List<Integer> excludedItems;
+    List<Integer> excludedItems = new ArrayList<Integer>();
 
     public MagicListView(Context context) {
         super(context);
@@ -248,14 +249,18 @@ public class MagicListView extends ListView {
         }
 
         if (mDragAndDeleteManager.isDeleting()) {
-            mListListener.onItemDelete(mDraggingItem);
+            if (mListListener != null) {
+                mListListener.onItemDelete(mDraggingItem);
+            }
         }
         else if (mDragAndDeleteManager.isDragging()) {
             // Handle the reordering after dropping an item
             int itemnum = MagicListView.this.pointToPosition(x, y);
             Object newParent = getItemAtPosition(itemnum - 1);
 
-            mListListener.onItemMoved(mDraggingItem, newParent);
+            if (mListListener != null) {
+                mListListener.onItemMoved(mDraggingItem, newParent);
+            }
         }
 
         // Collapse the expanded listview item, if it exists
