@@ -16,6 +16,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.npi.blureffect.Blur;
+
 public class BitmapManager {
     public static final double MIN_MEMORY_FACTOR = .125;
     public static final double MAX_MEMORY_FACTOR = .5;
@@ -51,6 +53,7 @@ public class BitmapManager {
     private ImageCache mCache;
     private ConcurrentLinkedQueue<Image> mQueue = new ConcurrentLinkedQueue<Image>();
     private BitmapLoader mBitmapLoader;
+    private Context mApplicationContext;
 
     /**
      * Gets a BitmapManager with a memory factor of at least 1/8.
@@ -96,6 +99,8 @@ public class BitmapManager {
     }
 
     private BitmapManager(Context context, double memoryFactor) {
+        mApplicationContext = context.getApplicationContext();
+
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
 
         int memoryClassBytes = am.getMemoryClass() * 1024 * 1024;
@@ -132,6 +137,11 @@ public class BitmapManager {
      */
     public void displayBitmapScaled(String imageFilename, ImageView imageView, int maxSize,
             OnBitmapLoadedListener bitmapLoadedListener) {
+        displayBitmapScaled(imageFilename, imageView, maxSize, false, bitmapLoadedListener);
+    }
+
+    public void displayBitmapScaled(String imageFilename, ImageView imageView, int maxSize,
+                                    boolean blurred, OnBitmapLoadedListener bitmapLoadedListener) {
         if (imageFilename == null || imageFilename.equals(""))
             throw new IllegalArgumentException("imageFilename must be specified");
 
@@ -139,7 +149,7 @@ public class BitmapManager {
             throw new IllegalArgumentException("imageFilename must be a real file");
         }
 
-        Image image = new Image(imageFilename, imageView, maxSize, bitmapLoadedListener);
+        Image image = new Image(imageFilename, imageView, maxSize, blurred, bitmapLoadedListener);
 
         // Have the ImageView remember the latest image to display
         imageView.setTag(image.getHash());
@@ -274,14 +284,18 @@ public class BitmapManager {
         private ImageView imageView;
         private int maxSize;
         private OnBitmapLoadedListener runnable;
+        private boolean blurred;
+        private String unblurredHash;
 
-        public Image(String imageLocation, ImageView imageView, int maxSize,
+        public Image(String imageLocation, ImageView imageView, int maxSize, boolean blurred,
                 OnBitmapLoadedListener runAfterImageUpdated) {
             this.imageLocation = new File(imageLocation);
-            this.hash = Util.md5(imageLocation + maxSize);
+            this.hash = Util.md5(imageLocation + maxSize) + ((blurred) ? "blur" : "");
+            this.unblurredHash = Util.md5(imageLocation + maxSize);
             this.imageView = imageView;
             this.maxSize = maxSize;
             this.runnable = runAfterImageUpdated;
+            this.blurred = blurred;
         }
 
         public OnBitmapLoadedListener getListener() {
@@ -303,6 +317,8 @@ public class BitmapManager {
         public int getMaxSize() {
             return maxSize;
         }
+
+        public boolean getBlurred() { return blurred; }
     }
 
     private class BitmapLoader extends Thread {
@@ -347,6 +363,9 @@ public class BitmapManager {
                 }
 
                 if (image.getHash() != null && b != null) {
+                    if (image.getBlurred()) {
+                        b = Blur.fastblur(mApplicationContext, b, 12);
+                    }
                     mCache.put(image.getHash(), b);
                 }
 
