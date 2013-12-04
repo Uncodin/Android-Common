@@ -23,6 +23,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import in.uncod.android.R;
+
 public abstract class DoneDiscardActivity extends ActionBarActivity {
 
     public abstract void doneClick();
