@@ -319,6 +319,10 @@ public class BitmapManager {
         }
 
         public boolean getBlurred() { return blurred; }
+
+        public String getUnblurredHash() {
+            return unblurredHash;
+        }
     }
 
     private class BitmapLoader extends Thread {
@@ -330,35 +334,37 @@ public class BitmapManager {
                 if (!image.getImageView().getTag().equals(image.getHash()))
                     continue; // Don't bother loading image since we don't want it in this view anymore
 
-                Bitmap b = null;
+                Bitmap b = mCache.get(image.unblurredHash);
 
-                if (image.getMaxSize() == -1) {
-                    try {
-                        b = BitmapFactory.decodeFile(image.getImageLocation().getAbsolutePath());
+                if (b == null) {
+                    if (image.getMaxSize() == -1) {
+                        try {
+                            b = BitmapFactory.decodeFile(image.getImageLocation().getAbsolutePath());
+                        }
+                        catch (OutOfMemoryError e) {
+                            e.printStackTrace();
+                            mCache.freeSpace();
+                        }
                     }
-                    catch (OutOfMemoryError e) {
-                        e.printStackTrace();
-                        mCache.freeSpace();
-                    }
-                }
-                else {
+                    else {
 
-                    int orientation = 0;
+                        int orientation = 0;
 
-                    ExifInterface exif = null;
-                    try {
-                        exif = new ExifInterface(image.getImageLocation().toString());
-                        orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                        ExifInterface exif = null;
+                        try {
+                            exif = new ExifInterface(image.getImageLocation().toString());
+                            orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-                    try {
-                        b = loadBitmapScaled(image.getImageLocation(), image.getMaxSize(), orientation);
-                    }
-                    catch (OutOfMemoryError e) {
-                        mCache.freeSpace();
+                        try {
+                            b = loadBitmapScaled(image.getImageLocation(), image.getMaxSize(), orientation);
+                        }
+                        catch (OutOfMemoryError e) {
+                            mCache.freeSpace();
+                        }
                     }
                 }
 
